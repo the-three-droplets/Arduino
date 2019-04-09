@@ -7,20 +7,22 @@
   
   #define indPin 13
   char data = 0;
+  #include <SoftwareSerial.h>
+  SoftwareSerial BTSerial = SoftwareSerial(10, 11); // RX | TX
   
   void setup()
   {
-    Serial.begin(9600);
+    BTSerial.begin(9600);
     pinMode(indPin, OUTPUT);
   }
   
   void loop()
   {
-    if(Serial.available() > 0)
+    if(BTSerial.available() > 0)
     {
-      data = Serial.read();
-      Serial.print("BLE LED TEST...");
-      Serial.print("\n");
+      data = BTSerial.read();
+      BTSerial.print("BLE LED TEST...");
+      BTSerial.print("\n");
       if (data == '1')
       {
         digitalWrite(indPin, HIGH);
