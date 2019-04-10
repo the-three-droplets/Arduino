@@ -15,21 +15,20 @@
   char data = 0;
   #include <SoftwareSerial.h>
   SoftwareSerial BTSerial = SoftwareSerial(10, 11); // RX | TX
+  bool getData = true;
   
   void setup()
   {
    BTSerial.begin(9600);
-   Serial.begin(9600);
    pinMode(indPin, OUTPUT);    
   }
   
   void loop()
-  {
-    if(Serial.available() > 0)
+  { 
+    if (BTSerial.available() > 0)
     {
-      data = Serial.read();
-      Serial.print("BLE LED TEST...");
-      Serial.print("\n");
+      data = BTSerial.read();
+      BTSerial.print("\n");
       if (data == '1')
       {
         digitalWrite(indPin, HIGH);
@@ -38,18 +37,29 @@
       {
         digitalWrite(indPin, LOW);
       }
+      else if (data == '2')
+      {
+        getData = true;
+      }
+      else if (data == '3')
+      {
+        getData = false;
+      }
+ 
+    }
+
+    if (getData == true)
+    {
+      sensorValue = analogRead(sensorPin);
+        
+      //IMPORTANT: The complete String has to be of the Form: 1234,1234,1234,1234;
+      //(every Value has to be seperated through a comma (',') and the message has to
+      //end with a semikolon (';'))
+      
+      BTSerial.print(sensorValue); 
+      BTSerial.print(";");
+
+      delay(1000);
     }
     
-    sensorValue = analogRead(sensorPin);
-  
-    //IMPORTANT: The complete String has to be of the Form: 1234,1234,1234,1234;
-    //(every Value has to be seperated through a comma (',') and the message has to
-    //end with a semikolon (';'))
-    
-    BTSerial.print(sensorValue); 
-    BTSerial.print(";");
-                  
-    //message to the receiving device
-       
-     delay(1000);  
   }      
