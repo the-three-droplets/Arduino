@@ -8,9 +8,16 @@
     TX HC-05 to Arduino Pin 10 (RX)
     RX HC-05 to TX Arduino (TX)
    */
+
+  #include "RTClib.h"
+  RTC_DS1307 rtc;
+  DateTime start;
+  long unsigned int startunix;
   
-  int sensorPin = A0; 
+  int sensorPin = A0;
+  int timerPin = A1; 
   int sensorValue = 0;
+  int timeElapsed = 0;
   #define indPin 13
   char data = 0;
   #include <SoftwareSerial.h>
@@ -20,11 +27,25 @@
   void setup()
   {
    BTSerial.begin(9600);
-   pinMode(indPin, OUTPUT);    
+   pinMode(indPin, OUTPUT);
+
+   rtc.begin();
+   if (! rtc.isrunning()) {
+    Serial.println("RTC is NOT running. time will be adjusted");
+    // following line sets the RTC to the date & time this sketch was compiled
+    rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+   }
+   
+   rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+  
+   start = rtc.now();
+   startunix = start.unixtime();
   }
   
   void loop()
   { 
+    DateTime now = rtc.now();
+    
     if (BTSerial.available() > 0)
     {
       data = BTSerial.read();
@@ -45,18 +66,24 @@
       {
         getData = false;
       }
- 
+      else if (data == '4')
+      {
+        startunix = now.unixtime();
+      }
     }
 
     if (getData == true)
     {
       sensorValue = analogRead(sensorPin);
+      timeElapsed = now.unixtime() - startunix;
         
       //IMPORTANT: The complete String has to be of the Form: 1234,1234,1234,1234;
-      //(every Value has to be seperated through a comma (',') and the message has to
-      //end with a semikolon (';'))
+      //(every Value has to be separated through a comma (',') and the message has to
+      //end with a semicolon (';'))
       
-      BTSerial.print(sensorValue); 
+      BTSerial.print(sensorValue);
+      BTSerial.print(",");
+      BTSerial.print(timeElapsed); 
       BTSerial.print(";");
 
       delay(1000);
