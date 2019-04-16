@@ -15,7 +15,6 @@
   long unsigned int startunix;
   
   int sensorPin = A0;
-  int timerPin = A1; 
   int sensorValue = 0;
   int timeElapsed = 0;
   #define indPin 13
