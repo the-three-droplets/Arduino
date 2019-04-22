@@ -23,6 +23,22 @@ void setup() {
   Serial.begin(57600);
   BTSerial.begin(9600);
   scale.begin(LOADCELL_DOUT_PIN, LOADCELL_SCK_PIN);
+
+  BLEServer *pServer = BLEDevice::createServer();
+  pServer->setCallbacks(new MyServerCallbacks());
+
+  BLEService *pService = pServer->createService(SERVICE_UUID);
+
+  pCharacteristic = pService->createCharacteristic(
+    CHARACTERISTIC_UUID_TX,
+    BLECharacteristic::PROPERTY_NOTIFY
+    );
+
+  pCharacteristic->addDescriptor(new BLE290());
+
+  pService()->start();
+
+  pServer->getAdvertising()->start();
 }
 
 void loop() {
