@@ -1,9 +1,6 @@
 #include "HX711.h"
 #include <SoftwareSerial.h>
 
-#define SERVICE_UUID "00002902-0000-1000-8000-00805f9b34fb"
-#define CHARACTERISTIC_UUID_TX "00002902-0000-1000-8000-00805f9b34fc"
-
 const int LOADCELL_DOUT_PIN = 2;
 const int LOADCELL_SCK_PIN = 3;
 long average = 0;
@@ -22,23 +19,7 @@ HX711 scale;
 void setup() {
   Serial.begin(57600);
   BTSerial.begin(9600);
-  scale.begin(LOADCELL_DOUT_PIN, LOADCELL_SCK_PIN);
-
-  BLEServer *pServer = BLEDevice::createServer();
-  pServer->setCallbacks(new MyServerCallbacks());
-
-  BLEService *pService = pServer->createService(SERVICE_UUID);
-
-  pCharacteristic = pService->createCharacteristic(
-    CHARACTERISTIC_UUID_TX,
-    BLECharacteristic::PROPERTY_NOTIFY
-    );
-
-  pCharacteristic->addDescriptor(new BLE290());
-
-  pService()->start();
-
-  pServer->getAdvertising()->start();
+  scale.begin(LOADCELL_DOUT_PIN, LOADCELL_SCK_PIN);  
 }
 
 void loop() {
