@@ -1,0 +1,82 @@
+#include "HX711.h"
+#include <SoftwareSerial.h>
+
+const int LOADCELL_DOUT_PIN = 2;
+const int LOADCELL_SCK_PIN = 3;
+long average = 0;
+int count = 0;
+int countData = 0;
+long zero = 190600;
+double weight;
+long reading = 0;
+long conversion = 50;
+int tareCount;
+
+SoftwareSerial BTSerial = SoftwareSerial(10, 11); // RX | TX
+
+HX711 scale;
+
+void setup() {
+  Serial.begin(57600);
+  BTSerial.begin(9600);
+  scale.begin(LOADCELL_DOUT_PIN, LOADCELL_SCK_PIN);  
+}
+
+void loop() {
+  calculate();
+  printValue();
+  zeroIt();
+}
+
+void calculate() {
+  if (scale.is_ready()) {
+    reading = scale.read();
+    if(reading != 0 && reading != -1) {
+      average = average + reading;
+      countData++;
+    }
+    count++;
+  } 
+}
+
+void printValue() {
+  if (count == 20) {
+    reading = average / countData;
+    if(reading != -1) {
+   //   Serial.print("Reading: ");
+      weight = (reading + zero)/conversion;
+  //    Serial.println(reading + zero);
+      Serial.print("Weight (g): ");
+      if(weight < 0) {
+        Serial.println(0.00);
+      } else {
+        Serial.println(weight);
+      }
+      String data = String(weight);
+      BTSerial.print(data);
+      BTSerial.print(";");
+      tareIf();
+    }
+    count = 0;
+    average = 0;
+    countData = 0;
+  }
+}
+
+void zeroIt() {
+  if (Serial.available())
+  {
+    char ch = Serial.read();
+    if (ch == 't')
+    {
+      zero -= weight * conversion;
+    }
+  }
+  delay(10);
+}
+
+void tareIf() {
+  if(weight <= 7) {
+    zero -= weight * conversion;
+  } 
+}
