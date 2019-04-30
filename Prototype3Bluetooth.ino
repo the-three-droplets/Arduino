@@ -8,9 +8,11 @@ int count = 0;
 int countData = 0;
 long zero = 190600;
 double weight;
+double newWeight;
 long reading = 0;
 long conversion = 50;
-int tareCount;
+int tareAtStart = 0;
+int stCount;
 
 SoftwareSerial BTSerial = SoftwareSerial(10, 11); // RX | TX
 
@@ -24,8 +26,11 @@ void setup() {
 
 void loop() {
   calculate();
-  printValue();
+  if (count == 10) {
+    printValue();
+  }
   zeroIt();
+  tareIf();
 }
 
 void calculate() {
@@ -33,29 +38,51 @@ void calculate() {
     reading = scale.read();
     if(reading != 0 && reading != -1) {
       average = average + reading;
-      countData++;
+      countData += 1;
     }
-    count++;
+    count += 1;
   } 
 }
 
 void printValue() {
-  if (count == 20) {
     reading = average / countData;
+    
     if(reading != -1) {
-   //   Serial.print("Reading: ");
-      weight = (reading + zero)/conversion;
-  //    Serial.println(reading + zero);
-      Serial.print("Weight (g): ");
-      Serial.println(weight);
-      BTSerial.print(weight);
-      BTSerial.print(";");
-      tareIf();
+  //  Serial.print("Reading: ");
+      newWeight = (reading + zero)/conversion;
+      
+  //  Serial.println(reading + zero);
+
+      if(newWeight != weight)
+      {
+        Serial.print("Weight (g): ");
+        Serial.println(weight);
+   
+        String data = String(weight);
+        BTSerial.print(data);
+        weight = newWeight;
+
+        tareAtStart += 1;
+        stCount = 0;
+      }
+      else if(newWeight == 0)
+      {
+        Serial.print("Weight (g): ");
+   
+        String data = String(weight);
+        Serial.println(data);
+        BTSerial.print(data);
+        weight = newWeight;
+      }
+      
+      if(newWeight == weight)
+      {
+        stCount += 1;
+      }
     }
     count = 0;
     average = 0;
     countData = 0;
-  }
 }
 
 void zeroIt() {
@@ -71,14 +98,14 @@ void zeroIt() {
 }
 
 void tareIf() {
-  if(weight <= 1) {
-    tareCount++;
-  } else {
-    tareCount = 0;
-  }
-//  Serial.println(tareCount);
-  if(tareCount == 2) {
+  if(tareAtStart == 2)
+  {
     zero -= weight * conversion;
-    tareCount = 0;
+    tareAtStart++;
+  }
+  if(stCount == 10 && abs(weight) < 7)
+  {
+    zero -= weight * conversion;
+    stCount = 0;
   }
 }
