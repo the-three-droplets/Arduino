@@ -16,7 +16,7 @@ long zero = 190600;
 double weight;
 double newWeight;
 long reading = 0;
-long conversion = -50;
+long conversion = 50;
 int tareAtStart = 0;
 long timeElapsed = 0;
 int stCount = 0;
@@ -24,7 +24,7 @@ int stCount = 0;
 SoftwareSerial BTSerial = SoftwareSerial(10, 11); // RX | TX
 
 void setup() {
-  Serial.begin(57600);
+  //Serial.begin(57600);
   BTSerial.begin(9600);
   scale.begin(LOADCELL_DOUT_PIN, LOADCELL_SCK_PIN);
   
@@ -67,15 +67,18 @@ void printValue() {
       
       if(newWeight != weight)
       {
+        weight = newWeight;
         String data = String(weight);
         String timeData = String(timeElapsed);
 
         data = data + "," + timeData;
 
-        Serial.println(data);
-        BTSerial.print(data);
+        if(abs(weight) < 500)
+        {
+        //  Serial.println(data);
+          BTSerial.print(data);
+        }
         delay(10);
-        weight = newWeight;
 
         tareAtStart += 1;
         stCount = 0;
@@ -105,14 +108,14 @@ void printValue() {
 }
 
 void zeroIt() {
-  if (Serial.available())
-  {
-    char ch = Serial.read();
-    if (ch == 't')
-    {
-      zero -= weight * conversion;
-    }
-  }
+//  if (Serial.available())
+//  {
+//    char ch = Serial.read();
+//    if (ch == 't')
+//    {
+//      zero -= weight * conversion;
+//    }
+//  }
   
   delay(10);
 }
